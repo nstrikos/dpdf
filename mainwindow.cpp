@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_process = new QProcess;
     connect(m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readProcessOutput()));
+    startProcess();
 
     m_text = "";
     m_contents = "";
@@ -106,7 +107,8 @@ void MainWindow::open()
     if (filename.isEmpty())
         return;
 
-    handleFilenameQuotes(filename);
+//    handleFilenameQuotes(filename);
+    m_filename = filename;
 
     ui->plainTextEdit->clear();
     ui->label->clear();
@@ -119,7 +121,8 @@ void MainWindow::open()
     m_input = "";
     m_contents = "";
     m_text = "";
-    startProcess();
+
+    sendOpen();
 
     //Hack to make screen reader read textEdit
     getFocus();
@@ -149,8 +152,8 @@ void MainWindow::startProcess()
     QString command;
 
 #ifdef Q_OS_LINUX
-    //    command = "java -Dfile.encoding=UTF-8 -classpath /media/data/nick/projects/eclipse-workspace/pdfbox/bin:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/fontbox-2.0.19.jar:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/pdfbox-2.0.19.jar:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/pdfbox-app-2.0.19.jar:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/pdfbox-tools-2.0.19.jar:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/preflight-2.0.19.jar:/media/data/nick/projects/eclipse-workspace/pdfbox/lib/xmpbox-2.0.19.jar pdfbox.PageReader";
-    command = "java -Dfile.encoding=UTF-8 -jar /home/nick/projects/dpdf/pdfbox/lib/dpdf.jar";
+    command = "/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dfile.encoding=UTF-8 -classpath /home/nick/projects/eclipse-workspace/dpdf/bin:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/xmpbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/xmpbox-2.0.19.jar dpdf.PageReader";
+    //    command = "java -Dfile.encoding=UTF-8 -jar /home/nick/projects/dpdf/src/lib/dpdf.jar";
 #endif
 
 #ifdef Q_OS_WIN
@@ -158,7 +161,7 @@ void MainWindow::startProcess()
     command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe -Dfile.encoding=UTF-8 -jar C:\\Users\\Nick\\Desktop\\dpdf\\pdfbox\\lib\\dpdf.jar";
 #endif
 
-    command += " " + m_filename;
+//    command += " " + m_filename;
     m_process->terminate();
     m_process->waitForFinished();
     m_process->start(command.toUtf8());
@@ -172,6 +175,7 @@ void MainWindow::readContents()
 void MainWindow::readProcessOutput()
 {
     QString input = m_process->readAllStandardOutput();
+    qDebug() << input;
     m_input.append(input);
     if (m_input.contains("@pagereader finished contents@")) {
         int pos = m_input.lastIndexOf("@pagereader finished contents@");
@@ -246,7 +250,20 @@ void MainWindow::setPage(int page)
     m_input = "";
 
     //send page number to process
-    QString str1 = QString::number(page) + "\n";
+    QString str1 = "page " + QString::number(page) + "\n";
+
+    QByteArray ba = str1.toLocal8Bit();
+    const char *c_str2 = ba.data();
+    m_process->write(c_str2);
+}
+
+void MainWindow::sendOpen()
+{
+    m_input = "";
+
+    //send page number to process
+    QString str1 = "open " + m_filename + "\n";
+    qDebug() << str1;
 
     QByteArray ba = str1.toLocal8Bit();
     const char *c_str2 = ba.data();

@@ -33,6 +33,7 @@ private slots:
     void nextPage();
 
     void setPage(int page);
+    void sendOpen();
 
     void on_plainTextEdit_cursorPositionChanged();
 
