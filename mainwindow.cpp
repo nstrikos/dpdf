@@ -65,6 +65,10 @@ void MainWindow::createActions()
     nextPageAct->setShortcut(Qt::Key_F8);
     connect(nextPageAct, &QAction::triggered, this, &MainWindow::nextPage);
 
+    showContentsAct = new QAction(tr("&Show contents"), this);
+    showContentsAct->setShortcut(Qt::Key_F4);
+    connect(showContentsAct, &QAction::triggered, this, &MainWindow::showContents);
+
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 }
@@ -79,6 +83,7 @@ void MainWindow::createMenus()
     goToMenu = menuBar()->addMenu(tr("&Go to"));
     goToMenu->addAction(previousPageAct);
     goToMenu->addAction(nextPageAct);
+    goToMenu->addAction(showContentsAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -177,8 +182,8 @@ void MainWindow::readProcessOutput()
     QString input = m_process->readAllStandardOutput();
     qDebug() << input;
     m_input.append(input);
-    if (m_input.contains("@pagereader finished contents@")) {
-        int pos = m_input.lastIndexOf("@pagereader finished contents@");
+    if (m_input.contains("@pageReader number of pages@")) {
+        int pos = m_input.lastIndexOf("@pageReader number of pages@");
         QString tmp = m_input.left(pos);
         int pos2 = tmp.lastIndexOf("\n");
         m_contents = tmp.left(pos2);
@@ -187,7 +192,7 @@ void MainWindow::readProcessOutput()
         m_numPages = numPages.toInt();
         m_input = "";
         setPage(1);
-    } else if (m_input.contains("#end of page#"))
+    } else if (m_input.contains("@pageReader end of page@"))
         readPage();
 
     getFocus();
@@ -195,7 +200,7 @@ void MainWindow::readProcessOutput()
 
 void MainWindow::readPage()
 {
-    int pos = m_input.indexOf("#end of page#");
+    int pos = m_input.indexOf("@pageReader end of page@");
     m_text = m_input.left(pos);
     m_text = m_text.trimmed();
     ui->plainTextEdit->clear();
@@ -241,6 +246,18 @@ void MainWindow::nextPage()
     }
 
     setPage(m_curpage);
+}
+
+void MainWindow::showContents()
+{
+    m_input = "";
+
+    //send page number to process
+    QString str1 = "contents\n";
+
+    QByteArray ba = str1.toLocal8Bit();
+    const char *c_str2 = ba.data();
+    m_process->write(c_str2);
 }
 
 void MainWindow::setPage(int page)

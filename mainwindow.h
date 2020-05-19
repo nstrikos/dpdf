@@ -31,6 +31,7 @@ private slots:
 
     void previousPage();
     void nextPage();
+    void showContents();
 
     void setPage(int page);
     void sendOpen();
@@ -52,6 +53,7 @@ private:
     QAction *aboutAct;
     QAction *previousPageAct;
     QAction *nextPageAct;
+    QAction *showContentsAct;
 
     QProcess *m_process;
     KeyReceiver *keyReceiver;
