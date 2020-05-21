@@ -83,7 +83,7 @@ public class PageReader {
 		while (current != null) {
 			PDPage currentPage = current.findDestinationPage(document);
 			Integer pageNumber = document.getDocumentCatalog().getPages().indexOf(currentPage) + 1;
-			System.out.println(current.getTitle() + "-------->" + pageNumber);
+			System.out.println(current.getTitle() + "@pageReader@" + pageNumber + "@pageReader end page@");
 			getOutlines(document, current, indentation);
 			current = current.getNextSibling();
 		}

@@ -8,6 +8,7 @@
 #include <QtTest>
 
 #include "keyReceiver.h"
+#include "contentsDialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,8 +33,16 @@ MainWindow::MainWindow(QWidget *parent)
     m_filename = "";
     m_moveBackwards = false;
 
+    m_titles.clear();
+    m_pages.clear();
+
     keyReceiver = new KeyReceiver(this);
     ui->plainTextEdit->installEventFilter(keyReceiver);
+
+    contentsDialog = new ContentsDialog();
+    contentsDialog->show();
+//    connect(contentsDialog, SIGNAL(co)
+    connect(contentsDialog, &ContentsDialog::contentSelected, this, &MainWindow::contentSelected);
 }
 
 MainWindow::~MainWindow()
@@ -43,6 +52,7 @@ MainWindow::~MainWindow()
     delete m_process;
 
     delete keyReceiver;
+    delete contentsDialog;
 
     delete ui;
 }
@@ -112,7 +122,7 @@ void MainWindow::open()
     if (filename.isEmpty())
         return;
 
-//    handleFilenameQuotes(filename);
+    //    handleFilenameQuotes(filename);
     m_filename = filename;
 
     ui->plainTextEdit->clear();
@@ -126,6 +136,8 @@ void MainWindow::open()
     m_input = "";
     m_contents = "";
     m_text = "";
+    m_titles.clear();
+    m_pages.clear();
 
     sendOpen();
 
@@ -166,15 +178,34 @@ void MainWindow::startProcess()
     command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe -Dfile.encoding=UTF-8 -jar C:\\Users\\Nick\\Desktop\\dpdf\\pdfbox\\lib\\dpdf.jar";
 #endif
 
-//    command += " " + m_filename;
+    //    command += " " + m_filename;
     m_process->terminate();
     m_process->waitForFinished();
     m_process->start(command.toUtf8());
 }
 
-void MainWindow::readContents()
+void MainWindow::readContents(QString input)
 {
+    QString text = input.replace("@pageReader finished contents@\n", "");
+    QString line = "";
+    QString string1 = "@pageReader@";
+    QString string2 = "@pageReader end page@\n";
+    QString title = "";
+    QString page = "";
+    int n, k, l;
+    QStringList list = text.split(string2);
+    for (int i = 0; i < list.size() - 1; i++) { //last string in list is empty, so we don't process it
+        line = list.at(i);
+        n = line.indexOf(string1);
+        title = line.left(n);
+        k = string1.size();
+        l = line.size();
+        page = line.mid(n+k, l - n - k);
+        m_titles.append(title + " page " + page);
+        m_pages.append(page.toInt());
+    }
 
+    contentsDialog->setContents(&m_titles);
 }
 
 void MainWindow::readProcessOutput()
@@ -192,8 +223,12 @@ void MainWindow::readProcessOutput()
         m_numPages = numPages.toInt();
         m_input = "";
         setPage(1);
-    } else if (m_input.contains("@pageReader end of page@"))
+    } else if (m_input.contains("@pageReader end of page@")) {
         readPage();
+    } else if (m_input.contains("@pageReader finished contents@")) {
+        readContents(m_input);
+    }
+
 
     getFocus();
 }
@@ -258,6 +293,11 @@ void MainWindow::showContents()
     QByteArray ba = str1.toLocal8Bit();
     const char *c_str2 = ba.data();
     m_process->write(c_str2);
+}
+
+void MainWindow::contentSelected(int i)
+{
+    qDebug() << i << " " << m_pages.at(i);
 }
 
 void MainWindow::setPage(int page)

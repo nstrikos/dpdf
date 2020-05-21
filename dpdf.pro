@@ -18,15 +18,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    contentsDialog.cpp \
     keyReceiver.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    contentsDialog.h \
     keyReceiver.h \
     mainwindow.h
 
 FORMS += \
+    contentsDialog.ui \
     mainwindow.ui
 
 # Default rules for deployment.

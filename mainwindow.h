@@ -5,6 +5,7 @@
 
 class QProcess;
 class KeyReceiver;
+class ContentsDialog;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,6 +33,7 @@ private slots:
     void previousPage();
     void nextPage();
     void showContents();
+    void contentSelected(int i);
 
     void setPage(int page);
     void sendOpen();
@@ -57,6 +59,7 @@ private:
 
     QProcess *m_process;
     KeyReceiver *keyReceiver;
+    ContentsDialog *contentsDialog;
 
     QString m_filename;
     QString m_text;
@@ -66,12 +69,14 @@ private:
     int m_numPages;
     int m_curLine;
     bool m_moveBackwards;
+    QVector<QString> m_titles;
+    QVector<int> m_pages;
 
     void handleFilenameQuotes(QString file);
     void startProcess();
-    void readContents();
+    void readContents(QString input);
     void readPage();
     void moveCursorToLastLine();
     void getCurrentLine();
- };
+};
 #endif // MAINWINDOW_H
