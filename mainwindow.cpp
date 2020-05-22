@@ -335,7 +335,6 @@ void MainWindow::sendOpen()
 
     //send page number to process
     QString str1 = "open " + m_filename + "\n";
-    qDebug() << str1;
 
     QByteArray ba = str1.toLocal8Bit();
     const char *c_str2 = ba.data();
@@ -378,8 +377,10 @@ void MainWindow::keyUpPressed()
     m_moveBackwards = true;
     if (m_curLine == 1) {
         m_curpage--;
-        if (m_curpage < 1)
+        if (m_curpage < 1) {
             m_curpage = 1;
+            return;
+        }
         setPage(m_curpage);
     }
 }
