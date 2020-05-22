@@ -9,6 +9,7 @@
 
 #include "keyReceiver.h"
 #include "contentsDialog.h"
+#include "pageDialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -40,9 +41,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->plainTextEdit->installEventFilter(keyReceiver);
 
     contentsDialog = new ContentsDialog();
-    contentsDialog->show();
-//    connect(contentsDialog, SIGNAL(co)
+    contentsDialog->setModal(true);
     connect(contentsDialog, &ContentsDialog::contentSelected, this, &MainWindow::contentSelected);
+
+    pageDialog = new PageDialog();
+    pageDialog->setModal(true);
+    connect(pageDialog, &PageDialog::goToPage, this, &MainWindow::setPage);
 }
 
 MainWindow::~MainWindow()
@@ -75,6 +79,10 @@ void MainWindow::createActions()
     nextPageAct->setShortcut(Qt::Key_F8);
     connect(nextPageAct, &QAction::triggered, this, &MainWindow::nextPage);
 
+    goToPageAct = new QAction(tr("&Go to page..."), this);
+    goToPageAct->setShortcut(Qt::Key_F3);
+    connect(goToPageAct, &QAction::triggered, this, &MainWindow::goToPage);
+
     showContentsAct = new QAction(tr("&Show contents"), this);
     showContentsAct->setShortcut(Qt::Key_F4);
     connect(showContentsAct, &QAction::triggered, this, &MainWindow::showContents);
@@ -93,6 +101,7 @@ void MainWindow::createMenus()
     goToMenu = menuBar()->addMenu(tr("&Go to"));
     goToMenu->addAction(previousPageAct);
     goToMenu->addAction(nextPageAct);
+    goToMenu->addAction(goToPageAct);
     goToMenu->addAction(showContentsAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -193,6 +202,10 @@ void MainWindow::readContents(QString input)
     QString title = "";
     QString page = "";
     int n, k, l;
+
+    m_titles.clear();
+    m_pages.clear();
+
     QStringList list = text.split(string2);
     for (int i = 0; i < list.size() - 1; i++) { //last string in list is empty, so we don't process it
         line = list.at(i);
@@ -293,11 +306,12 @@ void MainWindow::showContents()
     QByteArray ba = str1.toLocal8Bit();
     const char *c_str2 = ba.data();
     m_process->write(c_str2);
+    contentsDialog->show();
 }
 
 void MainWindow::contentSelected(int i)
 {
-    qDebug() << i << " " << m_pages.at(i);
+    setPage(m_pages.at(i));
 }
 
 void MainWindow::setPage(int page)
@@ -305,6 +319,7 @@ void MainWindow::setPage(int page)
     ui->label->setText(QString::number(page));
 
     m_input = "";
+    m_curpage = page;
 
     //send page number to process
     QString str1 = "page " + QString::number(page) + "\n";
@@ -325,6 +340,11 @@ void MainWindow::sendOpen()
     QByteArray ba = str1.toLocal8Bit();
     const char *c_str2 = ba.data();
     m_process->write(c_str2);
+}
+
+void MainWindow::goToPage()
+{
+    pageDialog->show();
 }
 
 void MainWindow::on_plainTextEdit_cursorPositionChanged()

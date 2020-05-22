@@ -20,12 +20,13 @@ public:
 signals:
     void contentSelected(int item);
 
+protected:
+    bool eventFilter(QObject* obj, QEvent* event);
+
 private slots:
     void on_listWidget_itemClicked(QListWidgetItem *item);
-
-    void on_listWidget_itemPressed(QListWidgetItem *item);
-
     void on_listWidget_itemActivated(QListWidgetItem *item);
+    void on_closeButton_clicked();
 
 private:
     Ui::ContentsDialog *ui;

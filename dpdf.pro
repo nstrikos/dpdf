@@ -21,16 +21,19 @@ SOURCES += \
     contentsDialog.cpp \
     keyReceiver.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    pageDialog.cpp
 
 HEADERS += \
     contentsDialog.h \
     keyReceiver.h \
-    mainwindow.h
+    mainwindow.h \
+    pageDialog.h
 
 FORMS += \
     contentsDialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    pageDialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

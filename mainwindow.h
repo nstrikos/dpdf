@@ -6,6 +6,7 @@
 class QProcess;
 class KeyReceiver;
 class ContentsDialog;
+class PageDialog;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,9 +35,9 @@ private slots:
     void nextPage();
     void showContents();
     void contentSelected(int i);
-
     void setPage(int page);
     void sendOpen();
+    void goToPage();
 
     void on_plainTextEdit_cursorPositionChanged();
 
@@ -56,10 +57,12 @@ private:
     QAction *previousPageAct;
     QAction *nextPageAct;
     QAction *showContentsAct;
+    QAction *goToPageAct;
 
     QProcess *m_process;
     KeyReceiver *keyReceiver;
     ContentsDialog *contentsDialog;
+    PageDialog *pageDialog;
 
     QString m_filename;
     QString m_text;
