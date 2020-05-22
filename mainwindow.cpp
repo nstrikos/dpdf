@@ -51,7 +51,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+#ifdef Q_OS_WIN
+    sendQuit();
+#endif
+#ifdef Q_OS_LINUX
     m_process->terminate();
+#endif
     m_process->waitForFinished();
     delete m_process;
 
@@ -184,7 +189,7 @@ void MainWindow::startProcess()
 
 #ifdef Q_OS_WIN
     //    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\javaw.exe -Dfile.encoding=Cp1253 -classpath \"C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\bin;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\fontbox-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-app-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-tools-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\preflight-2.0.19.jar;C:\\Users\\Nick\eclipse-workspace\\pdfbox\\lib\\xmpbox-2.0.19.jar\" pdfbox.PageReader";
-    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe -Dfile.encoding=UTF-8 -jar C:\\Users\\Nick\\Desktop\\dpdf\\pdfbox\\lib\\dpdf.jar";
+    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe -Dfile.encoding=UTF-8 -jar C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
 #endif
 
     //    command += " " + m_filename;
@@ -198,7 +203,12 @@ void MainWindow::readContents(QString input)
     QString text = input.replace("@pageReader finished contents@\n", "");
     QString line = "";
     QString string1 = "@pageReader@";
+#ifdef Q_OS_WIN
+    QString string2 = "@pageReader end page@\r\n";
+#endif
+#ifdef Q_OS_LINUX
     QString string2 = "@pageReader end page@\n";
+#endif
     QString title = "";
     QString page = "";
     int n, k, l;
@@ -370,6 +380,15 @@ void MainWindow::getCurrentLine()
         block = block.previous();
     }
     m_curLine = lines;
+}
+
+void MainWindow::sendQuit()
+{
+    QString str1 = "quit\n";
+
+    QByteArray ba = str1.toLocal8Bit();
+    const char *c_str2 = ba.data();
+    m_process->write(c_str2);
 }
 
 void MainWindow::keyUpPressed()

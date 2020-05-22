@@ -81,5 +81,6 @@ private:
     void readPage();
     void moveCursorToLastLine();
     void getCurrentLine();
+    void sendQuit();
 };
 #endif // MAINWINDOW_H
