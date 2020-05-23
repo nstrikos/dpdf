@@ -4,7 +4,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode;
 
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -56,12 +55,10 @@ public class PageReader {
 			}
 
 			if (input.equals("contents")) {
-				PDDocumentOutline outline = pageReader.document.getDocumentCatalog().getDocumentOutline();
-				getOutlines(pageReader.document, outline, "");
-				System.out.println("@pageReader finished contents@");
+				getOutlines(pageReader.document);
 			}
 		}
-		
+
 		if (pageReader.document != null)
 			pageReader.document.close();
 	}
@@ -78,14 +75,30 @@ public class PageReader {
 		}		
 	}
 
-	public static void getOutlines(PDDocument document, PDOutlineNode bookmark, String indentation) throws IOException {
-		PDOutlineItem current = bookmark.getFirstChild();
-		while (current != null) {
-			PDPage currentPage = current.findDestinationPage(document);
-			Integer pageNumber = document.getDocumentCatalog().getPages().indexOf(currentPage) + 1;
-			System.out.println(current.getTitle() + "@pageReader@" + pageNumber + "@pageReader end page@");
-			getOutlines(document, current, indentation);
-			current = current.getNextSibling();
+	public static void getOutlines(PDDocument document) throws IOException {
+		PDDocumentOutline outline = document.getDocumentCatalog().getDocumentOutline();
+		PDOutlineItem item = outline.getFirstChild();
+		PDPage currentPage;
+		Integer pageNumber;
+		while( item != null )
+		{
+			currentPage = item.findDestinationPage(document);
+			if (currentPage != null) {
+				pageNumber = document.getDocumentCatalog().getPages().indexOf(currentPage) + 1;
+				System.out.println(item.getTitle() + "@pageReader@" + pageNumber + "@pageReader end page@");
+			}
+			PDOutlineItem child = item.getFirstChild();
+			while( child != null )
+			{
+				currentPage = child.findDestinationPage(document);
+				if (currentPage != null) {
+					pageNumber = document.getDocumentCatalog().getPages().indexOf(currentPage) + 1;
+					System.out.println(child.getTitle() + "@pageReader@" + pageNumber + "@pageReader end page@");
+				}
+				child = child.getNextSibling();
+			}
+			item = item.getNextSibling();
 		}
+		System.out.println("@pageReader finished contents@");
 	}
 }

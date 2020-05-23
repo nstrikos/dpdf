@@ -24,7 +24,12 @@ void ContentsDialog::setContents(QVector<QString> *titles)
         ui->listWidget->addItem(newItem);
     }
 
-//    ui->listWidget->setCurrentRow(0);
+    ui->listWidget->setCurrentRow(0);
+}
+
+void ContentsDialog::clear()
+{
+    ui->listWidget->clear();
 }
 
 bool ContentsDialog::eventFilter(QObject *obj, QEvent *event)

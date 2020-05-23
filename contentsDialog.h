@@ -16,6 +16,7 @@ public:
     explicit ContentsDialog(QWidget *parent = nullptr);
     ~ContentsDialog();
     void setContents(QVector<QString> *titles);
+    void clear();
 
 signals:
     void contentSelected(int item);

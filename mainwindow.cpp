@@ -183,8 +183,8 @@ void MainWindow::startProcess()
     QString command;
 
 #ifdef Q_OS_LINUX
-    command = "/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dfile.encoding=UTF-8 -classpath /home/nick/projects/eclipse-workspace/dpdf/bin:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/xmpbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/xmpbox-2.0.19.jar dpdf.PageReader";
-    //    command = "java -Dfile.encoding=UTF-8 -jar /home/nick/projects/dpdf/src/lib/dpdf.jar";
+//    command = "/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dfile.encoding=UTF-8 -classpath /home/nick/projects/eclipse-workspace/dpdf/bin:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/xmpbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/xmpbox-2.0.19.jar dpdf.PageReader";
+        command = "java -Dfile.encoding=UTF-8 -jar /home/nick/projects/dpdf/lib/dpdf.jar";
 #endif
 
 #ifdef Q_OS_WIN
@@ -309,6 +309,7 @@ void MainWindow::nextPage()
 void MainWindow::showContents()
 {
     m_input = "";
+    contentsDialog->clear();
 
     //send page number to process
     QString str1 = "contents\n";
