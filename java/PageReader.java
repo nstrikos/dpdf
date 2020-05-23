@@ -79,6 +79,8 @@ public class PageReader {
 	}
 
 	public static void getOutlines(PDDocument document, PDOutlineNode bookmark, String indentation) throws IOException {
+		if (bookmark == null)
+			return;
 		PDOutlineItem current = bookmark.getFirstChild();
 		while (current != null) {
 			PDPage currentPage = current.findDestinationPage(document);
