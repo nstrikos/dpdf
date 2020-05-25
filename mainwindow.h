@@ -38,6 +38,7 @@ private slots:
     void setPage(int page);
     void sendOpen();
     void goToPage();
+    void showPosition();
 
     void on_plainTextEdit_cursorPositionChanged();
 
@@ -58,6 +59,7 @@ private:
     QAction *nextPageAct;
     QAction *showContentsAct;
     QAction *goToPageAct;
+    QAction *positionAct;
 
     QProcess *m_process;
     KeyReceiver *keyReceiver;
@@ -74,6 +76,7 @@ private:
     bool m_moveBackwards;
     QVector<QString> m_titles;
     QVector<int> m_pages;
+    QString m_position;
 
     void handleFilenameQuotes(QString file);
     void startProcess();

@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_curLine = 1;
     m_numPages = 0;
     m_filename = "";
+    m_position = "";
     m_moveBackwards = false;
 
     m_titles.clear();
@@ -92,6 +93,10 @@ void MainWindow::createActions()
     showContentsAct->setShortcut(Qt::Key_F4);
     connect(showContentsAct, &QAction::triggered, this, &MainWindow::showContents);
 
+    positionAct = new QAction(tr("&Show Position"), this);
+    positionAct->setShortcut(Qt::Key_F12);
+    connect(positionAct, &QAction::triggered, this, &MainWindow::showPosition);
+
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 }
@@ -108,6 +113,7 @@ void MainWindow::createMenus()
     goToMenu->addAction(nextPageAct);
     goToMenu->addAction(goToPageAct);
     goToMenu->addAction(showContentsAct);
+    goToMenu->addAction(positionAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -140,8 +146,8 @@ void MainWindow::open()
     m_filename = filename;
 
     ui->plainTextEdit->clear();
-    ui->label->clear();
-    ui->label_2->clear();
+//    ui->label->clear();
+//    ui->label_2->clear();
     m_contents.clear();
 
     m_curpage = 1;
@@ -150,6 +156,7 @@ void MainWindow::open()
     m_input = "";
     m_contents = "";
     m_text = "";
+    m_position = "";
     m_titles.clear();
     m_pages.clear();
 
@@ -242,7 +249,7 @@ void MainWindow::readProcessOutput()
         int pos2 = tmp.lastIndexOf("\n");
         m_contents = tmp.left(pos2);
         QString numPages = tmp.right(tmp.size() - pos2);
-        ui->label_2->setText(numPages);
+//        ui->label_2->setText(numPages);
         m_numPages = numPages.toInt();
         m_input = "";
         setPage(1);
@@ -328,7 +335,7 @@ void MainWindow::contentSelected(int i)
 void MainWindow::setPage(int page)
 {
     if (page > 0 && page <= m_numPages) {
-        ui->label->setText(QString::number(page));
+//        ui->label->setText(QString::number(page));
 
         m_input = "";
         m_curpage = page;
@@ -341,7 +348,9 @@ void MainWindow::setPage(int page)
         m_process->write(c_str2);
     } else {
         QMessageBox msgBox;
-        msgBox.setText(tr("You must select a page between 1 and ") + QString::number(m_numPages));
+        QString text = tr("You must select a page between 1 and ") + QString::number(m_numPages);
+        msgBox.setText(text);
+        msgBox.setAccessibleName(text);
         msgBox.exec();
     }
 }
@@ -361,6 +370,16 @@ void MainWindow::sendOpen()
 void MainWindow::goToPage()
 {
     pageDialog->show();
+}
+
+void MainWindow::showPosition()
+{
+    if (m_position != "") {
+        QMessageBox msgBox;
+        msgBox.setText(m_position);
+        msgBox.setAccessibleName(m_position);
+        msgBox.exec();
+    }
 }
 
 void MainWindow::on_plainTextEdit_cursorPositionChanged()
@@ -387,6 +406,12 @@ void MainWindow::getCurrentLine()
         block = block.previous();
     }
     m_curLine = lines;
+
+    m_position = tr("Line: ") + QString::number(m_curLine) + " "
+            + tr("Page: ") + QString::number(m_curpage) + " "
+            + tr("of") + " " + QString::number(m_numPages);
+
+    ui->statusbar->showMessage(m_position);
 }
 
 void MainWindow::sendQuit()

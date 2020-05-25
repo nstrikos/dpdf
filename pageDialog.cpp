@@ -27,7 +27,9 @@ void PageDialog::on_okButton_clicked()
         hide();
     } else {
         QMessageBox msgBox;
-        msgBox.setText(tr("You must insert a number"));
+        QString text = tr("You must insert a number");
+        msgBox.setText(text);
+        msgBox.setAccessibleName(text);
         msgBox.exec();
     }
 }
