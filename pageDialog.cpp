@@ -1,6 +1,8 @@
 #include "pageDialog.h"
 #include "ui_pageDialog.h"
 
+#include <QMessageBox>
+
 PageDialog::PageDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PageDialog)
@@ -15,7 +17,17 @@ PageDialog::~PageDialog()
 
 void PageDialog::on_okButton_clicked()
 {
-    int i = ui->lineEdit->text().toInt();
-    emit goToPage(i);
-    hide();
+    bool textIsInteger;
+    int i = ui->lineEdit->text().toInt(&textIsInteger);
+
+    ui->lineEdit->clear();
+
+    if (textIsInteger) {
+        emit goToPage(i);
+        hide();
+    } else {
+        QMessageBox msgBox;
+        msgBox.setText(tr("You must insert a number"));
+        msgBox.exec();
+    }
 }
