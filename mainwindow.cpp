@@ -6,6 +6,8 @@
 #include <QProcess>
 #include <QTextBlock>
 #include <QtTest>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
 
 #include "keyReceiver.h"
 #include "contentsDialog.h"
@@ -35,6 +37,14 @@ MainWindow::MainWindow(QWidget *parent)
     m_position = "";
     m_moveBackwards = false;
 
+    player = new QMediaPlayer();
+    player->setMedia(QUrl(""));
+    playlist = new QMediaPlaylist();
+    playlist->addMedia(QUrl("qrc:/resources/109663__grunz__success-low.wav"));
+    playlist->setCurrentIndex(1);
+    player->setPlaylist(playlist);
+    m_loading = false;
+
     m_titles.clear();
     m_pages.clear();
 
@@ -60,6 +70,9 @@ MainWindow::~MainWindow()
 #endif
     m_process->waitForFinished();
     delete m_process;
+
+    delete playlist;
+    delete player;
 
     delete keyReceiver;
     delete contentsDialog;
@@ -146,8 +159,8 @@ void MainWindow::open()
     m_filename = filename;
 
     ui->plainTextEdit->clear();
-//    ui->label->clear();
-//    ui->label_2->clear();
+    //    ui->label->clear();
+    //    ui->label_2->clear();
     m_contents.clear();
 
     m_curpage = 1;
@@ -159,6 +172,12 @@ void MainWindow::open()
     m_position = "";
     m_titles.clear();
     m_pages.clear();
+    m_moveBackwards = false;
+    QTextCursor cursor = ui->plainTextEdit->textCursor();
+    cursor.setPosition(0);
+
+    playlist->setCurrentIndex(1);
+    m_loading = true;
 
     sendOpen();
 
@@ -241,7 +260,7 @@ void MainWindow::readContents(QString input)
 void MainWindow::readProcessOutput()
 {
     QString input = m_process->readAllStandardOutput();
-    qDebug() << input;
+    //    qDebug() << input;
     m_input.append(input);
     if (m_input.contains("@pageReader number of pages@")) {
         int pos = m_input.lastIndexOf("@pageReader number of pages@");
@@ -249,7 +268,7 @@ void MainWindow::readProcessOutput()
         int pos2 = tmp.lastIndexOf("\n");
         m_contents = tmp.left(pos2);
         QString numPages = tmp.right(tmp.size() - pos2);
-//        ui->label_2->setText(numPages);
+        //        ui->label_2->setText(numPages);
         m_numPages = numPages.toInt();
         m_input = "";
         setPage(1);
@@ -259,8 +278,12 @@ void MainWindow::readProcessOutput()
         readContents(m_input);
     }
 
-
     getFocus();
+    if (m_loading) {
+        m_loading = false;
+        playlist->setCurrentIndex(1);
+        player->play();
+    }
 }
 
 void MainWindow::readPage()
@@ -335,7 +358,7 @@ void MainWindow::contentSelected(int i)
 void MainWindow::setPage(int page)
 {
     if (page > 0 && page <= m_numPages) {
-//        ui->label->setText(QString::number(page));
+        //        ui->label->setText(QString::number(page));
 
         m_input = "";
         m_curpage = page;

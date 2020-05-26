@@ -7,6 +7,8 @@ class QProcess;
 class KeyReceiver;
 class ContentsDialog;
 class PageDialog;
+class QMediaPlayer;
+class QMediaPlaylist;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -65,6 +67,10 @@ private:
     KeyReceiver *keyReceiver;
     ContentsDialog *contentsDialog;
     PageDialog *pageDialog;
+
+    QMediaPlayer *player;
+    QMediaPlaylist *playlist;
+    bool m_loading;
 
     QString m_filename;
     QString m_text;
