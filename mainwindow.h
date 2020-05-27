@@ -30,6 +30,8 @@ protected:
 
 private slots:
     void open();
+    void openRecentFile();
+
     void about();
     void readProcessOutput();
 
@@ -49,6 +51,8 @@ private:
 
     void createActions();
     void createMenus();
+    void readSettings();
+    void writeSettings();
 
     QMenu *fileMenu;
     QMenu *goToMenu;
@@ -79,10 +83,14 @@ private:
     int m_curpage;
     int m_numPages;
     int m_curLine;
+    int m_savedLine;
     bool m_moveBackwards;
     QVector<QString> m_titles;
     QVector<int> m_pages;
     QString m_position;
+    bool m_loadingDocument;
+
+    void openFile(QString filename);
 
     void handleFilenameQuotes(QString file);
     void startProcess();
@@ -90,6 +98,14 @@ private:
     void readPage();
     void moveCursorToLastLine();
     void getCurrentLine();
+    void goToLine(int line);
     void sendQuit();
+
+    void updateRecentFileActions();
+    enum {MaxRecentFiles = 15};
+    QStringList recentFiles;
+    QAction *recentFileActions[MaxRecentFiles];
+    QAction *separatorAction;
+    QString strippedName(const QString &fileName);    
 };
 #endif // MAINWINDOW_H

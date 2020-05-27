@@ -22,6 +22,15 @@ MainWindow::MainWindow(QWidget *parent)
     createActions();
     createMenus();
 
+    m_filename = "";
+    m_curpage = 1;
+    m_curLine = 1;
+    m_numPages = 0;
+
+    m_loadingDocument = false;
+
+    readSettings();
+
     m_process = new QProcess;
     connect(m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readProcessOutput()));
     startProcess();
@@ -30,10 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_contents = "";
     m_input = "";
 
-    m_curpage = 1;
-    m_curLine = 1;
-    m_numPages = 0;
-    m_filename = "";
+
     m_position = "";
     m_moveBackwards = false;
 
@@ -58,10 +64,17 @@ MainWindow::MainWindow(QWidget *parent)
     pageDialog = new PageDialog();
     pageDialog->setModal(true);
     connect(pageDialog, &PageDialog::goToPage, this, &MainWindow::setPage);
+
+    if (m_filename != "") {
+        m_loadingDocument = true;
+        openFile(m_filename);
+    }
 }
 
 MainWindow::~MainWindow()
 {
+    writeSettings();
+
 #ifdef Q_OS_WIN
     sendQuit();
 #endif
@@ -85,6 +98,13 @@ void MainWindow::createActions()
     openAct = new QAction(tr("&Open"), this);
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
+
+    for (int i=0; i<MaxRecentFiles; ++i)
+    {
+        recentFileActions[i]=new QAction(this);
+        recentFileActions[i]->setVisible(false);
+        connect(recentFileActions[i], SIGNAL(triggered()), this, SLOT(openRecentFile()));
+    }
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
@@ -118,7 +138,14 @@ void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(openAct);
-    fileMenu->addSeparator();
+    //    fileMenu->addSeparator();
+
+    separatorAction = fileMenu->addSeparator();
+    for (int i=0; i<MaxRecentFiles; ++i)
+        fileMenu->addAction(recentFileActions[i]);
+
+    separatorAction = fileMenu->addSeparator();
+
     fileMenu->addAction(exitAct);
 
     goToMenu = menuBar()->addMenu(tr("&Go to"));
@@ -155,15 +182,24 @@ void MainWindow::open()
     if (filename.isEmpty())
         return;
 
-    //    handleFilenameQuotes(filename);
     m_filename = filename;
 
+    openFile(m_filename);
+    //    handleFilenameQuotes(filename);
+
+}
+
+void MainWindow::openFile(QString filename)
+{
+    m_filename = filename;
     ui->plainTextEdit->clear();
     //    ui->label->clear();
     //    ui->label_2->clear();
     m_contents.clear();
 
-    m_curpage = 1;
+    if (!m_loadingDocument) {
+        m_curpage = 1;
+    }
     m_numPages = 0;
 
     m_input = "";
@@ -178,6 +214,10 @@ void MainWindow::open()
 
     playlist->setCurrentIndex(1);
     m_loading = true;
+
+    recentFiles.removeAll(m_filename);
+    recentFiles.prepend(m_filename);
+    updateRecentFileActions();
 
     sendOpen();
 
@@ -271,7 +311,7 @@ void MainWindow::readProcessOutput()
         //        ui->label_2->setText(numPages);
         m_numPages = numPages.toInt();
         m_input = "";
-        setPage(1);
+        setPage(m_curpage);
     } else if (m_input.contains("@pageReader end of page@")) {
         readPage();
     } else if (m_input.contains("@pageReader finished contents@")) {
@@ -296,6 +336,10 @@ void MainWindow::readPage()
 
     if (m_moveBackwards)
         moveCursorToLastLine();
+    if (m_loadingDocument) {
+        m_loadingDocument = false;
+        goToLine(m_savedLine);
+    }
 }
 
 void MainWindow::moveCursorToLastLine()
@@ -430,11 +474,28 @@ void MainWindow::getCurrentLine()
     }
     m_curLine = lines;
 
-    m_position = tr("Line: ") + QString::number(m_curLine) + " "
+    m_position = tr("Line: ") + QString::number(m_curLine) + ", "
             + tr("Page: ") + QString::number(m_curpage) + " "
-            + tr("of") + " " + QString::number(m_numPages);
+            + tr("of") + " " + QString::number(m_numPages) + ", "
+            + strippedName(m_filename);
 
     ui->statusbar->showMessage(m_position);
+}
+
+void MainWindow::goToLine(int line)
+{
+    QTextCursor cursor = ui->plainTextEdit->textCursor();
+    cursor.setPosition(QTextCursor::Start);
+
+    qDebug() << line;
+    int lines = line - 1;
+    while(lines > 0) {
+        cursor.movePosition(QTextCursor::Down);
+        lines--;
+        qDebug() << lines;
+    }
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    ui->plainTextEdit->setTextCursor(cursor);
 }
 
 void MainWindow::sendQuit()
@@ -471,4 +532,64 @@ void MainWindow::getFocus()
 {
     menuBar()->setFocus();
     ui->plainTextEdit->setFocus();
+}
+
+void MainWindow::openRecentFile()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+        openFile(action->data().toString());
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QMutableStringListIterator i(recentFiles);
+
+    while (i.hasNext())
+    {
+        if (!QFile::exists(i.next()))
+            i.remove();
+    }
+
+    for (int j=0; j<MaxRecentFiles; ++j)
+    {
+        if (j<recentFiles.count())
+        {
+            QString text=tr("&%1 %2").arg(j+1).arg(strippedName(recentFiles[j]));
+            recentFileActions[j]->setText(text);
+            recentFileActions[j]->setData(recentFiles[j]);
+            recentFileActions[j]->setVisible(true);
+        }
+        else
+        {
+            recentFileActions[j]->setVisible(false);
+        }
+    }
+    separatorAction->setVisible(!recentFiles.isEmpty());
+}
+
+QString MainWindow::strippedName(const QString &fullFileName)
+{
+    return QFileInfo(fullFileName).fileName();
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("Dpdf", "Dpdf");
+    recentFiles = settings.value("recentFiles").toStringList();
+    m_filename = settings.value("filename").toString();
+    m_curpage = settings.value("page").toInt();
+    m_numPages = settings.value("numPages").toInt();
+    m_savedLine = settings.value("line").toInt();
+    updateRecentFileActions();
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("Dpdf", "Dpdf");
+    settings.setValue("recentFiles", recentFiles);
+    settings.setValue("filename", m_filename);
+    settings.setValue("page", m_curpage);
+    settings.setValue("numPages", m_numPages);
+    settings.setValue("line", m_curLine);
 }
