@@ -18,52 +18,58 @@ public class PageReader {
 	public PDDocument document;
 	public PDFTextStripper reader;
 
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception {
 
 		PageReader pageReader = new PageReader();
 
-		String input = "";
+		String userInput = "";
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in)); 
+		//bufferReader reads console input
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in)); 
 
-		while (input != "quit") {
+		while (!userInput.equals("quit")) {
 
-			input = reader.readLine();
+			//read user input
+			userInput = bufferedReader.readLine();
 
-			if (input.equals("quit"))
-				break;
-
-			if (input.startsWith("open")) {
-				String filename = input.substring(5, input.length());
-				if (pageReader.document != null)
-					pageReader.document.close();
-
-				try {
-					pageReader.document = PDDocument.load(new File(filename));
-					pageReader.reader = new PDFTextStripper();
-
-					System.out.print(pageReader.document.getNumberOfPages());
-					System.out.println("@pageReader number of pages@");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			if (userInput.startsWith("open")) {
+				
+				//read filename from user input
+				String filename = userInput.substring(5, userInput.length());
+				pageReader.openFile(filename);
 			}
 
-			if (input.startsWith("page")) {
-				String page = input.substring(5, input.length());
+			if (userInput.startsWith("page")) {
+				
+				//read page from user input
+				String page = userInput.substring(5, userInput.length());
 				int pageid = Integer.parseInt(page);
 				pageReader.pageText(pageid);
 			}
 
-			if (input.equals("contents")) {
+			if (userInput.equals("contents")) {
 				PDDocumentOutline outline = pageReader.document.getDocumentCatalog().getDocumentOutline();
-				getOutlines(pageReader.document, outline, "");
+				pageReader.getOutlines(pageReader.document, outline);
 				System.out.println("@pageReader finished contents@");
 			}
 		}
 
 		if (pageReader.document != null)
 			pageReader.document.close();
+	}
+
+	void openFile(String filename) {
+		try {			
+			if (document != null)
+				document.close();
+			document = PDDocument.load(new File(filename));
+			reader = new PDFTextStripper();
+
+			System.out.print(document.getNumberOfPages());
+			System.out.println("@pageReader number of pages@");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
 	}
 
 	void pageText (int page) {
@@ -78,7 +84,7 @@ public class PageReader {
 		}		
 	}
 
-	public static void getOutlines(PDDocument document, PDOutlineNode bookmark, String indentation) throws IOException {
+	void getOutlines(PDDocument document, PDOutlineNode bookmark) throws IOException {
 		if (bookmark == null)
 			return;
 		PDOutlineItem current = bookmark.getFirstChild();
@@ -88,7 +94,7 @@ public class PageReader {
 				Integer pageNumber = document.getDocumentCatalog().getPages().indexOf(currentPage) + 1;
 				System.out.println(current.getTitle() + "@pageReader@" + pageNumber + "@pageReader end page@");
 			}
-			getOutlines(document, current, indentation);
+			getOutlines(document, current);
 			current = current.getNextSibling();
 		}
 	}

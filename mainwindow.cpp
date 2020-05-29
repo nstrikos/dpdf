@@ -130,6 +130,10 @@ void MainWindow::createActions()
     positionAct->setShortcut(Qt::Key_F12);
     connect(positionAct, &QAction::triggered, this, &MainWindow::showPosition);
 
+    bookmarkAct = new QAction(tr("Add &bookmark"), this);
+    bookmarkAct->setShortcut(Qt::Key_F11);
+    connect(bookmarkAct, &QAction::triggered, this, &MainWindow::addBookmark);
+
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 }
@@ -154,6 +158,7 @@ void MainWindow::createMenus()
     goToMenu->addAction(goToPageAct);
     goToMenu->addAction(showContentsAct);
     goToMenu->addAction(positionAct);
+    goToMenu->addAction(bookmarkAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -447,6 +452,11 @@ void MainWindow::showPosition()
         msgBox.setAccessibleName(m_position);
         msgBox.exec();
     }
+}
+
+void MainWindow::addBookmark()
+{
+
 }
 
 void MainWindow::on_plainTextEdit_cursorPositionChanged()

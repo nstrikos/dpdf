@@ -43,6 +43,7 @@ private slots:
     void sendOpen();
     void goToPage();
     void showPosition();
+    void addBookmark();
 
     void on_plainTextEdit_cursorPositionChanged();
 
@@ -66,6 +67,7 @@ private:
     QAction *showContentsAct;
     QAction *goToPageAct;
     QAction *positionAct;
+    QAction *bookmarkAct;
 
     QProcess *m_process;
     KeyReceiver *keyReceiver;
