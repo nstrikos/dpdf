@@ -259,14 +259,17 @@ void MainWindow::startProcess()
 #endif
 
 #ifdef Q_OS_WIN
-    //    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\javaw.exe -Dfile.encoding=Cp1253 -classpath \"C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\bin;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\fontbox-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-app-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\pdfbox-tools-2.0.19.jar;C:\\Users\\Nick\\eclipse-workspace\\pdfbox\\lib\\preflight-2.0.19.jar;C:\\Users\\Nick\eclipse-workspace\\pdfbox\\lib\\xmpbox-2.0.19.jar\" pdfbox.PageReader";
-    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe -Dfile.encoding=UTF-8 -jar C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
+    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe";
 #endif
 
-    //    command += " " + m_filename;
     m_process->terminate();
     m_process->waitForFinished();
-    m_process->start(command.toUtf8());
+
+    QStringList arguments;
+    arguments << "-Dfile.encoding=UTF-8";
+    arguments << "-jar";
+    arguments << "C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
+    m_process->start(command.toUtf8(), arguments);
 }
 
 void MainWindow::readContents(QString input)
@@ -434,7 +437,7 @@ void MainWindow::sendOpen()
     //send page number to process
     QString str1 = "open " + m_filename + "\n";
 
-    QByteArray ba = str1.toLocal8Bit();
+    QByteArray ba = str1.toUtf8();//.toLocal8Bit();
     const char *c_str2 = ba.data();
     m_process->write(c_str2);
 }
