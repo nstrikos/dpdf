@@ -252,23 +252,25 @@ void MainWindow::handleFilenameQuotes(QString file)
 void MainWindow::startProcess()
 {
     QString command;
+    QStringList arguments;
+
 
 #ifdef Q_OS_LINUX
-    //    command = "/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Dfile.encoding=UTF-8 -classpath /home/nick/projects/eclipse-workspace/dpdf/bin:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/dpdf/lib/xmpbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/fontbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-app-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/pdfbox-tools-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/preflight-2.0.19.jar:/home/nick/projects/eclipse-workspace/dpdf/src/lib/xmpbox-2.0.19.jar dpdf.PageReader";
-    command = "java -Dfile.encoding=UTF-8 -jar /home/nick/projects/dpdf/lib/dpdf.jar";
+    command = "java";
+    arguments << "-Dfile.encoding=UTF-8";
+    arguments << "-jar";
+    arguments << "/home/nick/dpdf.jar";
 #endif
 
 #ifdef Q_OS_WIN
     command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe";
+    arguments << "-Dfile.encoding=UTF-8";
+    arguments << "-jar";
+    arguments << "C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
 #endif
 
     m_process->terminate();
     m_process->waitForFinished();
-
-    QStringList arguments;
-    arguments << "-Dfile.encoding=UTF-8";
-    arguments << "-jar";
-    arguments << "C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
     m_process->start(command.toUtf8(), arguments);
 }
 
@@ -342,11 +344,16 @@ void MainWindow::readPage()
     ui->plainTextEdit->clear();
     ui->plainTextEdit->setPlainText(m_text);
 
-    if (m_moveBackwards)
+    if (m_moveBackwards) {
+        m_moveBackwards = false;
         moveCursorToLastLine();
-    if (m_loadingDocument) {
+    }
+    else if (m_loadingDocument) {
         m_loadingDocument = false;
         goToLine(m_savedLine);
+    } else {
+        QTextCursor cursor = ui->plainTextEdit->textCursor();
+        cursor.setPosition(0);
     }
 }
 
