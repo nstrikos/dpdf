@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 class QProcess;
+class ProcessManager;
 class KeyReceiver;
 class ContentsDialog;
 class PageDialog;
@@ -29,6 +30,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private slots:
+
     void open();
     void openRecentFile();
 
@@ -70,6 +72,7 @@ private:
     QAction *bookmarkAct;
 
     QProcess *m_process;
+    ProcessManager *m_processManager;
     KeyReceiver *keyReceiver;
     ContentsDialog *contentsDialog;
     PageDialog *pageDialog;
@@ -95,7 +98,6 @@ private:
     void openFile(QString filename);
 
     void handleFilenameQuotes(QString file);
-    void startProcess();
     void readContents(QString input);
     void readPage();
     void moveCursorToLastLine();

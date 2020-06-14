@@ -9,6 +9,7 @@
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 
+#include "processManager.h"
 #include "keyReceiver.h"
 #include "contentsDialog.h"
 #include "pageDialog.h"
@@ -32,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
     readSettings();
 
     m_process = new QProcess;
+    m_processManager = new ProcessManager(*m_process);
     connect(m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(readProcessOutput()));
-    startProcess();
 
     m_text = "";
     m_contents = "";
@@ -73,6 +74,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete m_processManager;
+
     writeSettings();
 
 #ifdef Q_OS_WIN
@@ -247,31 +250,6 @@ void MainWindow::handleFilenameQuotes(QString file)
         }
     }
     m_filename = tmpFilename;
-}
-
-void MainWindow::startProcess()
-{
-    QString command;
-    QStringList arguments;
-
-
-#ifdef Q_OS_LINUX
-    command = "java";
-    arguments << "-Dfile.encoding=UTF-8";
-    arguments << "-jar";
-    arguments << "/home/nick/dpdf.jar";
-#endif
-
-#ifdef Q_OS_WIN
-    command = "C:\\Users\\Nick\\projects\\jdk-12.0.1\\bin\\java.exe";
-    arguments << "-Dfile.encoding=UTF-8";
-    arguments << "-jar";
-    arguments << "C:\\Users\\Nick\\Desktop\\dpdf\\lib\\dpdf.jar";
-#endif
-
-    m_process->terminate();
-    m_process->waitForFinished();
-    m_process->start(command.toUtf8(), arguments);
 }
 
 void MainWindow::readContents(QString input)

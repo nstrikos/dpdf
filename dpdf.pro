@@ -22,13 +22,15 @@ SOURCES += \
     keyReceiver.cpp \
     main.cpp \
     mainwindow.cpp \
-    pageDialog.cpp
+    pageDialog.cpp \
+    processManager.cpp
 
 HEADERS += \
     contentsDialog.h \
     keyReceiver.h \
     mainwindow.h \
-    pageDialog.h
+    pageDialog.h \
+    processManager.h
 
 FORMS += \
     contentsDialog.ui \
